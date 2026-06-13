@@ -5,14 +5,12 @@ import sim.Message;
 import java.util.concurrent.*;
 
 public abstract class DisasterResponder  {
-    // Runs blocking receive loop
-    protected final Thread commsThread;
+    protected final Thread commsThread;          // blocking receive loop
     protected String configFile;
-    // Bounded executor for work
-    protected final ExecutorService executor;
+    protected final ExecutorService executor;    // bounded worker pool
 
-    protected BlockingQueue<Message> inMessageQueue; // outgoing messages to Simulator
-    protected BlockingQueue<Message> outMessageQueue;  // incoming messages from Simulator
+    protected BlockingQueue<Message> inMessageQueue;   // events from Simulator
+    protected BlockingQueue<Message> outMessageQueue;  // commands to Simulator
 
     public DisasterResponder() {
         inMessageQueue = new LinkedBlockingQueue<Message>();
@@ -35,6 +33,7 @@ public abstract class DisasterResponder  {
         System.out.println("RESPONDER SETUP FINISHES");
     }
 
+    // Drain inbound queue until SHUTDOWN; exceptions in handle() are logged, not fatal.
     private void commsLoop() {
         while (true) {
             try {

@@ -34,8 +34,7 @@ public class Graph {
     }
 
     public void removeNode(String id) {
-
-        // removes id as destination
+        // Drop id as a destination: unlink it from every source that pointed at it.
         Set<String> sources = revIdx.remove(id);
         if (sources != null) {
             for (String src : sources) {
@@ -46,7 +45,7 @@ public class Graph {
             }
         }
 
-        // remove id as a source
+        // Drop id as a source: remove it from the reverse index of each of its targets.
         ConcurrentHashMap<String, Double> destinations = adjList.remove(id);
         if (destinations != null) {
             for (String dst : destinations.keySet()) {
@@ -74,11 +73,8 @@ public class Graph {
         return neighbours.get(dst);
     }
 
-    /**
-     * Returns all nodes with an edge INTO `node`, mapped to their edge weights.
-     * Used by reverse Dijkstra and bidirectional Dijkstra's backward search.
-     * Builds from the reverse index — no separate reversed graph needed.
-     */
+    // All nodes with an edge INTO `node`, mapped to edge weights — built from the
+    // reverse index. Used by reverse Dijkstra and bidirectional Dijkstra's backward search.
     public Map<String, Double> getReverseNeighbours(String node) {
         Set<String> sources = revIdx.getOrDefault(node, Collections.emptySet());
         Map<String, Double> result = new HashMap<>();

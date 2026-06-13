@@ -8,10 +8,10 @@ import java.util.Properties;
 
 public class RescueQueue {
     public static class RescueMission {
-        final String location;
-        final int numPeople;
-        final double travelTime; //forwardDist / VEHICLE_SPEED - optimistic estimate
-        final long receiptTimeMs; // System.currentTimeMillis() when received
+        public final String location;
+        public final int numPeople;
+        public final double travelTime; //forwardDist / VEHICLE_SPEED - optimistic estimate
+        public final long receiptTimeMs; // System.currentTimeMillis() when received
 
         RescueMission(String location, int numPeople, double travelTime) {
             this.location = location;
@@ -24,14 +24,24 @@ public class RescueQueue {
     private final long rescueDurationTicks;
     private final double vehicleSpeed;
 
-    // Ordered by estimated deadline — earliest receipt time first
-    // Since rescueDurationTicks is constant, ordering by receiptTimeMs is equivalent
-    private  final PriorityQueue<RescueMission> queue = new PriorityQueue<>(Comparator.comparingLong(m -> m.receiptTimeMs));
+    private final PriorityQueue<RescueMission> queue;
 
     public RescueQueue(String configFile) {
         Properties props = ConfigurationInfo.loadConfig(configFile);
-        this.rescueDurationTicks = Long.parseLong(props.getProperty("RESCUE_DURATION", "0"));
+        // Sim multiplies RESCUE_DURATION by TIME_FACTOR=1000 internally — match that here.
+        this.rescueDurationTicks = Long.parseLong(props.getProperty("RESCUE_DURATION", "0")) * 1000L;
         this.vehicleSpeed = Double.parseDouble(props.getProperty("VEHICLE_SPEED", "1.0"));
+
+        if (rescueDurationTicks > 0) {
+            // EDF: all missions share the same duration, so deadline = receiptTimeMs + constant.
+            // Sorting by receiptTimeMs ascending = earliest deadline first.
+            this.queue = new PriorityQueue<>(Comparator.comparingLong(m -> m.receiptTimeMs));
+        } else {
+            // No deadline — dispatch nearest first. Every rescue carries the same number of
+            // people (fixed sim constant), so shortest travel time maximises people delivered
+            // per unit time under heavy transit attrition.
+            this.queue = new PriorityQueue<>(Comparator.comparingDouble(m -> m.travelTime));
+        }
     }
 
 

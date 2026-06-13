@@ -15,30 +15,23 @@ public class GraphBuilder {
     public static Graph buildFromGraphML(String file) throws JDOMException, IOException {
         Graph g = new Graph();
 
-        // the SAXBuilder is the easiest way to create the JDOM2 objects.
         SAXBuilder jdomBuilder = new SAXBuilder();
-
-        // jdomDocument is the JDOM2 Object
         Document jdomDocument = jdomBuilder.build(file);
 
-        // The root element is the root of the document.
         Element graphxml = jdomDocument.getRootElement();
-
-        Namespace ns = graphxml.getNamespace(); // Namespace.getNamespace("http://foo.com");
-
+        Namespace ns = graphxml.getNamespace();
         Element graph = graphxml.getChild("graph", ns);
 
+        // Nodes: one per <node id="...">.
         List<Element> nodes = graph.getChildren("node", ns);
-
         for (Element e: nodes) {
             String id = e.getAttribute("id").getValue();
             g.addNode(id);
         }
 
+        // Edges: directed source→target, weight from the d1 data element.
         List<Element> edges = graph.getChildren("edge", ns);
-
         for (Element e : edges) {
-            List<Attribute> at = e.getAttributes();
             long nS = e.getAttribute("source").getLongValue();
             long nD = e.getAttribute("target").getLongValue();
 
