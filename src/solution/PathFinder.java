@@ -438,6 +438,7 @@ public class PathFinder {
     // Build the PATH message and enqueue it. Skips destroyed vehicles; records the route
     // so damage handlers know which vehicles to halt.
     private void sendPath(int vehicleNo, List<String> waypoints) {
+        if (waypoints.size() < 2) return; // already at destination — no PATH needed
         if (tracker != null) {
             VehicleStateTracker.VehicleState state = tracker.getState(vehicleNo);
             if (state == VehicleStateTracker.VehicleState.DESTROYED) return;
