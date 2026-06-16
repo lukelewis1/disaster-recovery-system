@@ -1,4 +1,4 @@
-# rescueClean COMP3712
+# COMP3712 Disaster Recovery System
 This README is for Luke Lewis's (lewi0146) code solution for the major assignment for Advanced Algorithms and Programming COMP3712.
 The JVM runtime being used for all testing and development was the OpenJDK 26.0.1.
 
